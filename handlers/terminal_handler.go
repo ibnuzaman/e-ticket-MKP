@@ -50,6 +50,13 @@ func (h *TerminalHandler) CreateTerminal(c echo.Context) error {
 		Status:     "active",
 	}
 
+	var existing models.Terminal
+	if err := h.DB.Where("name = ?", terminal.Name).First(&existing).Error; err == nil {
+		return c.JSON(http.StatusConflict, map[string]string{"error": "Terminal with this name already exists"})
+	} else if err != gorm.ErrRecordNotFound {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Database error"})
+	}
+
 	if err := h.DB.Create(&terminal).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create terminal"})
 	}
