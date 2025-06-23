@@ -1,0 +1,23 @@
+alur_kerja_offline:
+  check_in:
+    - Gate membaca Card ID dan saldo dari kartu.
+    - Gate memverifikasi saldo cukup berdasarkan tarif maksimum (di-cache di gate).
+    - Gate mencatat titik check-in dan timestamp di penyimpanan lokal dan kartu.
+    - Gate membuka jika validasi berhasil.
+  check_out:
+    - Gate membaca log check-in dari kartu.
+    - Gate menghitung tarif berdasarkan titik check-in dan check-out menggunakan tabel tarif yang di-cache.
+    - Gate mengurangi saldo di kartu dan mencatat transaksi di penyimpanan lokal.
+  sinkronisasi_setelah_online:
+    - Ketika koneksi internet kembali, gate mengirimkan semua transaksi lokal ke server melalui API.
+    - Server memverifikasi dan merekonsiliasi transaksi untuk memastikan konsistensi.
+    - Jika ada konflik (misalnya, saldo tidak sinkron), server mengirimkan notifikasi ke admin.
+
+mekanisme_keamanan:
+  - Enkripsi: Data di kartu dienkripsi dengan AES-256.
+  - Validasi Offline: Kartu menyimpan hash transaksi terakhir untuk mencegah manipulasi.
+  - Idempotensi: Setiap transaksi memiliki ID unik untuk mencegah duplikasi saat sinkronisasi.
+
+keterbatasan:
+  - Kapasitas penyimpanan kartu terbatas, sehingga hanya log transaksi terakhir yang disimpan.
+  - Tarif offline bergantung pada cache gate, sehingga pembaruan tarif membutuhkan sinkronisasi rutin.

@@ -1,0 +1,41 @@
+komponen_utama:
+  prepaid_card:
+    deskripsi: Kartu pintar dengan chip RFID/NFC yang menyimpan ID unik, saldo, dan log transaksi terakhir (untuk validasi offline).
+  gate_terminal:
+    deskripsi: Perangkat di 5 terminal dengan gate validasi.
+    fitur:
+      - Pembaca kartu (RFID/NFC)
+      - Penyimpanan lokal (untuk operasi offline)
+      - Koneksi ke server (saat online)
+  central_server:
+    deskripsi: Backend yang menangani manajemen pengguna dan kartu, sinkronisasi transaksi dari gate, penentuan tarif berdasarkan titik check-in dan check-out, serta API untuk integrasi dengan aplikasi lain.
+  database:
+    deskripsi: Penyimpanan terpusat untuk data pengguna, transaksi, dan tarif.
+  komunikasi:
+    - Protokol HTTPS untuk komunikasi gate-server (saat online)
+    - Algoritma enkripsi AES untuk data di kartu
+    - Protokol sinkronisasi berbasis event queue (Kafka) untuk menangani transaksi offline
+
+alur_kerja_online:
+  check_in:
+    - Pengguna menempelkan kartu pada gate check-in.
+    - Gate membaca Card ID dan mengirimkan ke server.
+    - Server memverifikasi saldo kartu dan mencatat titik check-in beserta timestamp.
+    - Jika saldo cukup, gate membuka dan menyimpan log sementara.
+  check_out:
+    - Pengguna menempelkan kartu pada gate check-out.
+    - Gate mengirimkan Card ID dan titik check-out ke server.
+    - Server menghitung tarif berdasarkan titik check-in dan check-out, lalu mengurangi saldo kartu.
+    - Server mencatat transaksi dan memperbarui log di kartu (melalui gate).
+  sinkronisasi:
+    - Gate mengirimkan log transaksi secara periodik ke server menggunakan API.
+    - Server memastikan idempotensi untuk menghindari duplikasi transaksi.
+  manajemen_tarif:
+    - Tarif disimpan di database dan di-cache di gate untuk referensi cepat.
+    - Admin dapat memperbarui tarif melalui dashboard yang terhubung ke server.
+
+teknologi:
+  backend: Golang dengan framework Echo untuk API
+  database: PostgreSQL untuk data transaksi dan pengguna
+  komunikasi: REST API dengan HTTPS, menggunakan JWT untuk autentikasi
+  caching: Redis untuk menyimpan tarif dan data sementara
